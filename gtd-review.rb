@@ -2,11 +2,15 @@ require 'rubygems'
 require 'toodledo'
 #require 'logger'
 
+# File containing the following (not kept in repository)
+#
+load "keyconf.rb"
+
 config = {
   "connection" => {
     "url" => "http://www.toodledo.com/api.php",
-    "user_id" => "6d3fc97a36399642",
-    "password" => "pr3t5n00dtd"
+    "user_id" => key.user_id,
+    "password" => key.password
   }
 }
 
