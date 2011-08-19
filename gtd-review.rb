@@ -1,42 +1,46 @@
 require 'rubygems'
 require 'toodledo'
-#require 'logger'
 
-# File containing the following (not kept in repository)
+load 'slimtask.rb'
+
+# File containing the following (not kept in repository). Format:
+# $key_user_id = "USER ID"
+# $key_password = "PASSWORD"
 #
 load "keyconf.rb"
 
 config = {
   "connection" => {
     "url" => "http://www.toodledo.com/api.php",
-    "user_id" => key.user_id,
-    "password" => key.password
+    "user_id" => $key_user_id,
+    "password" => $key_password
   }
 }
+
+FOLDERS = ['Projects', 'Household', 'Personal', 'HCI', 'Community']
+CONTEXTS = ['Agendas', 'Calls', 'Computer', 'Email', 'Errands', 'Home',
+            'Someday', 'WorkOffice', nil]
 
 #log = Logger.new(STDOUT)
 #log.level = Logger::DEBUG
 
-class SlimTask
-  def initialize(title, note, context, folder, tag, completed, added, priority, modified)
-    @title = title
-    @note = note
-    @context = context
-    @folder = folder
-    @project = tag
-    @completed = completed
-    @added = added
-    @priority = priority
-    @modified = modified
-  end
-end
-
 Toodledo.set_config(config)
 
-tasks = nil
+tasks = []
 Toodledo.begin do |session|
-  tasks = session.get_tasks({:notcomp => true})
+  for folder in FOLDERS
+    for context in CONTEXTS
+      tasks = tasks + session.get_tasks({:notcomp => true,
+                                         :context => context,
+                                         :folder => folder})
+      if folder.nil? then folder = "" end
+      if context.nil? then context = "" end
+      print "Folder - " + folder + "; Context - " + context + "; Task tally - " +
+          tasks.length.to_s + "\n"
+    end
+  end
 end
+print "Toodledo tasks: " + tasks.length.to_s + "\n"
 ntasks = []
 tasks.each { |task| 
   ntasks << SlimTask.new(task.title,
@@ -49,7 +53,9 @@ tasks.each { |task|
                          task.priority,
                          task.modified) 
 }
+print "Tasks: " + tasks.length.to_s + "\n"
+
 File.open("notcomp-tasks.marshal", "w+") do |f|
-  Marshal.dump(tasks);
+  Marshal.dump(ntasks, f);
 end
 
