@@ -1,3 +1,5 @@
 /.idea
 /keyconf.rb
 /notcomp-tasks.marshal
+/comp-tasks.marshal
+/tmp
